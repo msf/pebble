@@ -133,7 +133,12 @@ func (bt bTx) Commit(opts *pebble.WriteOptions) error {
 }
 
 func (bt bTx) Close() error {
-	return bt.w.Flush()
+	if bt.w != nil {
+		return bt.w.Flush()
+	} else if bt.b != nil {
+		return bt.b.Close()
+	}
+	return nil
 }
 
 func (bt bTx) Delete(key []byte, opts *pebble.WriteOptions) error {
@@ -146,10 +151,10 @@ func (bt bTx) LogData(data []byte, opts *pebble.WriteOptions) error {
 
 func (p *badgerDB) Scan(iter iterator, key []byte, count int64, reverse bool) error {
 	return p.d.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.IteratorOptions{Reverse: reverse, Prefix: key})
+		it := txn.NewIterator(badger.IteratorOptions{Reverse: reverse})
 		defer it.Close()
 		i := int64(0)
-		for it.Seek(key); i < count; it.Next() {
+		for it.Seek(key); it.Valid() && i < count; it.Next() {
 			p.data, _ = p.data.Copy(it.Item().Key())
 			it.Item().Value(func(val []byte) error {
 				p.data, _ = p.data.Copy(val)
