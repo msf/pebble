@@ -10,6 +10,7 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/cockroachdb/pebble/internal/bytealloc"
 	badger "github.com/dgraph-io/badger/v4"
+	"golang.org/x/exp/slog"
 )
 
 // Adapters for Pebble. Since the interfaces above are based on Pebble's
@@ -136,7 +137,7 @@ func (bt bTx) Close() error {
 	if bt.w != nil {
 		return bt.w.Flush()
 	} else if bt.b != nil {
-		return bt.b.Close()
+		return bt.b.Sync()
 	}
 	return nil
 }
@@ -175,6 +176,7 @@ func (p badgerDB) Commit(opts *pebble.WriteOptions) error {
 }
 
 func (p badgerDB) Metrics() *pebble.Metrics {
+	slog.Info("metric called")
 	levels := p.d.Levels()
 	m := &pebble.Metrics{
 		BlockCache: pebble.CacheMetrics{
