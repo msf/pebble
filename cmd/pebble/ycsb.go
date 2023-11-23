@@ -341,9 +341,11 @@ func (y *ycsb) init(db DB, wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 		_ = b.Close()
-		fmt.Printf("inserted keys [%d-%d)\n",
+		fmt.Printf("inserted keys [%d-%d), total size: %v\n",
 			1+ycsbConfig.prepopulatedKeys,
-			1+ycsbConfig.prepopulatedKeys+ycsbConfig.initialKeys)
+			1+ycsbConfig.prepopulatedKeys+ycsbConfig.initialKeys,
+			size,
+		)
 	}
 	y.keyNum = ackseq.New(uint64(ycsbConfig.initialKeys + ycsbConfig.prepopulatedKeys))
 
